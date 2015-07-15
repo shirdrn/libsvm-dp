@@ -30,7 +30,7 @@ public class LuceneDocumentAnalyzer extends AbstractDocumentAnalyzer implements 
 	
 	public LuceneDocumentAnalyzer(ConfigReadable configuration) {
 		super(configuration);
-		analyzer = new SmartChineseAnalyzer();
+		analyzer = new SmartChineseAnalyzer(false);
 	}
 
 	@Override
