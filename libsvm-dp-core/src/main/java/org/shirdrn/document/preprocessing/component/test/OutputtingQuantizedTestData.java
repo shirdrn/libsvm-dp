@@ -11,6 +11,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.shirdrn.document.preprocessing.api.Context;
 import org.shirdrn.document.preprocessing.component.AbstractOutputtingQuantizedData;
+import org.shirdrn.document.preprocessing.utils.FileUtils;
 
 import com.google.common.collect.Maps;
 
@@ -18,7 +19,7 @@ public class OutputtingQuantizedTestData extends AbstractOutputtingQuantizedData
 
 	private static final Log LOG = LogFactory.getLog(OutputtingQuantizedTestData.class);
 	
-	public OutputtingQuantizedTestData(Context context) {
+	public OutputtingQuantizedTestData(final Context context) {
 		super(context);
 	}
 
@@ -31,47 +32,37 @@ public class OutputtingQuantizedTestData extends AbstractOutputtingQuantizedData
 	protected void quantizeTermVectors() {
 		// load label vector
 		LOG.info("Load label vector...");
-		loadLabelVector();
-	}
-
-	private void loadLabelVector() {
 		// <label, labelId> pairs
-		Map<String, Integer> globalLabelToIdMap = Maps.newHashMap();
-		// <labelId, label> pairs
-		Map<Integer, String> globalIdToLabelMap = Maps.newHashMap();
-		BufferedReader reader = null;
-		try {
-			reader = new BufferedReader(new InputStreamReader(new FileInputStream(
-					context.getFDMetadata().getLabelVectorFile()), context.getCharset()));
-			String line = null;
-			while((line = reader.readLine()) != null) {
-				line = line.trim();
-				if(!line.isEmpty()) {
-					String[] aLabel = line.split("\\s+");
-					if(aLabel.length == 2) {
-						int labelId = Integer.parseInt(aLabel[0]);
-						String label = aLabel[1];
-						globalIdToLabelMap.put(labelId, label);
-						globalLabelToIdMap.put(label, labelId);
-					}
-				}
-			}
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if(reader != null) {
+				Map<String, Integer> globalLabelToIdMap = Maps.newHashMap();
+				// <labelId, label> pairs
+				Map<Integer, String> globalIdToLabelMap = Maps.newHashMap();
+				BufferedReader reader = null;
 				try {
-					reader.close();
+					reader = new BufferedReader(new InputStreamReader(new FileInputStream(
+							context.getFDMetadata().getLabelVectorFile()), context.getCharset()));
+					String line = null;
+					while((line = reader.readLine()) != null) {
+						line = line.trim();
+						if(!line.isEmpty()) {
+							String[] aLabel = line.split("\\s+");
+							if(aLabel.length == 2) {
+								int labelId = Integer.parseInt(aLabel[0]);
+								String label = aLabel[1];
+								globalIdToLabelMap.put(labelId, label);
+								globalLabelToIdMap.put(label, labelId);
+							}
+						}
+					}
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
 				} catch (IOException e) {
 					e.printStackTrace();
+				} finally {
+					FileUtils.closeQuietly(reader);
 				}
-			}
-		}
-		LOG.info("Loaded: globalIdToLabelMap=" + globalIdToLabelMap);
-		context.getVectorMetadata().putIdToLabelPairs(globalIdToLabelMap);
-		context.getVectorMetadata().putLabelToIdPairs(globalLabelToIdMap);
+				LOG.info("Loaded: globalIdToLabelMap=" + globalIdToLabelMap);
+				context.getVectorMetadata().putIdToLabelPairs(globalIdToLabelMap);
+				context.getVectorMetadata().putLabelToIdPairs(globalLabelToIdMap);
 	}
 	
 }

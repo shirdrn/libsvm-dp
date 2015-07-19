@@ -13,8 +13,9 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.shirdrn.document.preprocessing.api.Context;
-import org.shirdrn.document.preprocessing.api.Term;
+import org.shirdrn.document.preprocessing.api.TermFeatureable;
 import org.shirdrn.document.preprocessing.component.AbstractOutputtingQuantizedData;
+import org.shirdrn.document.preprocessing.utils.FileUtils;
 
 import com.google.common.collect.Maps;
 
@@ -31,7 +32,7 @@ public class OutputtingQuantizedTrainData extends AbstractOutputtingQuantizedDat
 	private int labelNumber = 0;
 	private int wordNumber = 0;
 	
-	public OutputtingQuantizedTrainData(Context context) {
+	public OutputtingQuantizedTrainData(final Context context) {
 		super(context);
 	}
 
@@ -56,13 +57,7 @@ public class OutputtingQuantizedTrainData extends AbstractOutputtingQuantizedDat
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			if(w != null) {
-				try {
-					w.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			FileUtils.closeQuietly(w);
 		}
 	}
 	
@@ -75,7 +70,7 @@ public class OutputtingQuantizedTrainData extends AbstractOutputtingQuantizedDat
 		Map<Integer, String> globalIdToLabelMap = Maps.newHashMap();
 		
 		// generate label id
-		for(String label : context.getVectorMetadata().getLabels()) {
+		for(String label : context.getVectorMetadata().labels()) {
 			Integer labelId = globalLabelToIdMap.get(label);
 			if(labelId == null) {
 				++labelNumber;
@@ -84,39 +79,32 @@ public class OutputtingQuantizedTrainData extends AbstractOutputtingQuantizedDat
 				globalIdToLabelMap.put(labelId, label);
 			}
 		}
-		// generate word id
-		 Iterator<Entry<String,Term>> iter = 
-					context.getVectorMetadata().featuredTermVectorIterator();
-		while(iter.hasNext()) {
-			Entry<String,Term> entry = iter.next();
-			++wordNumber;
-			entry.getValue().setId(wordNumber);
+		
+		// generate word id from featured term collection
+		for(TermFeatureable term : context.getVectorMetadata().featuredTerms()) {
+			term.setId(++wordNumber);
 		}
-		// store metadata
+		
+		// store meta data
 		context.getVectorMetadata().putLabelToIdPairs(globalLabelToIdMap);
 		context.getVectorMetadata().putIdToLabelPairs(globalIdToLabelMap);
 		
-		// output term vectors
-		outputChiTermVector();
+		// output featured term vector
+		outputFeatureTermVector();
 	}
-
-	private void outputChiTermVector() {
+	
+	private void outputFeatureTermVector() {
 		BufferedWriter w = null;
-		Iterator<Entry<String,Term>> iter = 
-				context.getVectorMetadata().featuredTermVectorIterator();
 		try {
-			w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(
-					context.getFDMetadata().getFeatureTermVectorFile()), context.getCharset()));
-			while(iter.hasNext()) {
-				Entry<String,Term> entry = iter.next();
-				String word = entry.getKey();
-				Integer wordId = entry.getValue().getId();
+			w = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(context.getFDMetadata().getFeatureTermVectorFile()), context.getCharset()));
+			for(TermFeatureable term : context.getVectorMetadata().featuredTerms()) {
+				String word = term.getWord();
+				Integer wordId = term.getId();
 				StringBuffer buf = new StringBuffer();
 				buf
 					.append(word).append("\t")
 					.append(wordId);
-				LOG.debug("Write CHI term vector: word=" + word + 
-						", datum=" + buf.toString());
+				LOG.debug("Write feature term vector: word=" + word + ", datum=" + buf.toString());
 				w.write(buf.toString());
 				w.newLine();
 			}
@@ -125,13 +113,7 @@ public class OutputtingQuantizedTrainData extends AbstractOutputtingQuantizedDat
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			if(w != null) {
-				try {
-					w.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+			FileUtils.closeQuietly(w);
 		}
 	}
 

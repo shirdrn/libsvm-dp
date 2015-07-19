@@ -2,14 +2,13 @@ package org.shirdrn.document.preprocessing.driver;
 
 import org.shirdrn.document.preprocessing.api.Context;
 import org.shirdrn.document.preprocessing.api.ProcessorType;
-import org.shirdrn.document.preprocessing.common.Component;
-import org.shirdrn.document.preprocessing.common.VectorMetadataImpl;
 import org.shirdrn.document.preprocessing.component.BasicInformationCollector;
 import org.shirdrn.document.preprocessing.component.DocumentTFIDFComputation;
 import org.shirdrn.document.preprocessing.component.DocumentWordsCollector;
 import org.shirdrn.document.preprocessing.component.test.LoadFeatureTermVector;
 import org.shirdrn.document.preprocessing.component.test.OutputtingQuantizedTestData;
 import org.shirdrn.document.preprocessing.driver.common.AbstractDocumentProcessorDriver;
+import org.shirdrn.document.preprocessing.utils.PreprocessingUtils;
 
 /**
  * The driver for starting components to process TEST data set.
@@ -29,19 +28,23 @@ import org.shirdrn.document.preprocessing.driver.common.AbstractDocumentProcesso
  */
 public class TestDocumentProcessorDriver extends AbstractDocumentProcessorDriver {
 
+	private static final String CONFIG = "config-test.properties";
+	
 	@Override
 	public void process() {
-		Context context = super.newContext(ProcessorType.TRAIN, "config-test.properties");
-		context.setVectorMetadata(new VectorMetadataImpl());
-		// for test data
-		Component[]	chain = new Component[] {
-				new BasicInformationCollector(context),
-				new DocumentWordsCollector(context),
-				new LoadFeatureTermVector(context),
-				new DocumentTFIDFComputation(context),
-				new OutputtingQuantizedTestData(context)
-			};
-		run(chain);
+		Context context = super.newContext(ProcessorType.TEST, CONFIG);
+		context.setVectorMetadata(PreprocessingUtils.newVectorMetadata());
+		
+		// build component chain for test data
+		Class<?>[] classes = new Class[] {
+				BasicInformationCollector.class,
+				DocumentWordsCollector.class,
+				LoadFeatureTermVector.class,
+				DocumentTFIDFComputation.class,
+				OutputtingQuantizedTestData.class
+		};
+		
+		run(PreprocessingUtils.newChainedComponents(context, classes));
 	}
 	
 	public static void main(String[] args) {

@@ -6,19 +6,19 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.shirdrn.document.preprocessing.api.Term;
-import org.shirdrn.document.preprocessing.common.TermImpl;
+import org.shirdrn.document.preprocessing.api.TermFeatureable;
+import org.shirdrn.document.preprocessing.common.FeaturedTerm;
 
 public class SortUtils {
 	
 	private static final Log LOG = LogFactory.getLog(SortUtils.class);
-	private final Entry<String, Term>[] array;
+	private final Entry<String, TermFeatureable>[] array;
 	private boolean isDescOrder;
 	private int topN;
 	private final Result result = new Result();
 	
 	@SuppressWarnings("unchecked")
-	public SortUtils(Map<String, Term> terms, boolean isDescOrder, int topN) {
+	public SortUtils(Map<String, TermFeatureable> terms, boolean isDescOrder, int topN) {
 		super();
 		array = new Entry[terms.size()];
 		terms.entrySet().toArray(array);
@@ -34,13 +34,13 @@ public class SortUtils {
 	
 	private void print() {
 		for(int i=0; i<array.length; i++) {
-			Entry<String, Term> t = array[i];
+			Entry<String, TermFeatureable> t = array[i];
 			System.out.println(t.getKey() + "\t:" + t.getValue());
 		}
 	}
 
 	public Result heapSort() {
-		Entry<String, Term> tmp; // 用于交换的暂存单元
+		Entry<String, TermFeatureable> tmp; // 用于交换的暂存单元
 		buildHeap(); // 执行初始建堆，并调整
 		if(LOG.isDebugEnabled()) {
 			System.out.println("Build heap:");
@@ -101,7 +101,7 @@ public class SortUtils {
     }
     
     private void adjustForDesc(int s, int m) {
-    	Entry<String, Term> tmp = array[s]; // 当前待调整的结点
+    	Entry<String, TermFeatureable> tmp = array[s]; // 当前待调整的结点
 		int i = 2 * s + 1; // 当前待调整结点的左孩子结点的索引(i+1为当前调整结点的右孩子结点的索引)
 		while (i < m) {
 			if (i + 1 < m && array[i].getValue().getMeasureValue() > array[i + 1].getValue().getMeasureValue()) { // 如果右孩子大于左孩子(找到比当前待调整结点大的孩子结点)
@@ -119,7 +119,7 @@ public class SortUtils {
     }
     
     private void adjustForAsc(int s, int m) {
-    	Entry<String, Term> tmp = array[s]; // 当前待调整的结点
+    	Entry<String, TermFeatureable> tmp = array[s]; // 当前待调整的结点
 		int i = 2 * s + 1; // 当前待调整结点的左孩子结点的索引(i+1为当前调整结点的右孩子结点的索引)
 		while (i < m) {
 			if (i + 1 < m && array[i].getValue().getMeasureValue() < array[i + 1].getValue().getMeasureValue()) { // 如果右孩子大于左孩子(找到比当前待调整结点大的孩子结点)
@@ -138,14 +138,14 @@ public class SortUtils {
     
     public static class Result {
     	
-    	private Entry<String, Term>[] array;
+    	private Entry<String, TermFeatureable>[] array;
     	private int startIndex;
     	private int endIndex;
     	
-		public Entry<String, Term>[] getArray() {
+		public Entry<String, TermFeatureable>[] getArray() {
 			return array;
 		}
-		public void setArray(Entry<String, Term>[] array) {
+		public void setArray(Entry<String, TermFeatureable>[] array) {
 			this.array = array;
 		}
 		public int getStartIndex() {
@@ -160,19 +160,19 @@ public class SortUtils {
 		public void setEndIndex(int endIndex) {
 			this.endIndex = endIndex;
 		}
-		public Entry<String, Term> get(int index) {
+		public Entry<String, TermFeatureable> get(int index) {
 			return array[index];
 		}
     }
     
-    static void put(Map<String, Term> terms, String word, double chi) {
-    	Term t = new TermImpl(word);
+    static void put(Map<String, TermFeatureable> terms, String word, double chi) {
+    	TermFeatureable t = new FeaturedTerm(word);
     	t.setMeasureValue(chi);
     	terms.put(word, t);
     }
     
 	public static void main(String[] args) {
-    	Map<String, Term> terms = new HashMap<String, Term>();
+    	Map<String, TermFeatureable> terms = new HashMap<String, TermFeatureable>();
     	put(terms, "god", 1.3250);
     	put(terms, "hello", 121.5450);
     	put(terms, "world", 104.2211);
@@ -184,7 +184,7 @@ public class SortUtils {
 		SortUtils sorter = new SortUtils(terms, false, 4);
 		Result result = sorter.heapSort();
     	for(int i=result.getStartIndex(); i<=result.getEndIndex(); i++) {
-    		Entry<String, Term> t = result.get(i);
+    		Entry<String, TermFeatureable> t = result.get(i);
     		System.out.println(t.getKey() + "\t:" + t.getValue());
     	}
 	}

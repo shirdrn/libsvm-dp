@@ -2,10 +2,9 @@ package org.shirdrn.document.preprocessing.common;
 
 import org.shirdrn.document.preprocessing.api.Term;
 
-public class TermImpl implements Term {
+public class TermImpl extends AbstractTerm implements Term {
 
 	private int id;
-	private String word;
 	private String lexicalCategory = "unknown";
 	private int freq = 0;
 	private double tf;
@@ -13,11 +12,15 @@ public class TermImpl implements Term {
 	private double tfidf = 0;
 	private double measureValue = 0;
 	
-	public int getId() {
+	public TermImpl(String word) {
+		super(word);
+	}
+	
+	public Integer getId() {
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(Integer id) {
 		this.id = id;
 	}
 
@@ -69,11 +72,6 @@ public class TermImpl implements Term {
 		this.tfidf = tfidf;
 	}
 
-	public TermImpl(String word) {
-		super();
-		this.word = word;
-	}
-	
 	@Override
 	public int hashCode() {
 		return word.hashCode();
@@ -102,7 +100,6 @@ public class TermImpl implements Term {
 			.append("tf=").append(tf).append(", ")
 			.append("idf=").append(idf).append(", ")
 			.append("tf-idf=").append(tfidf).append(", ")
-			.append("chi=").append(measureValue)
 			.append("]");
 		return buffer.toString();
 	}

@@ -1,14 +1,11 @@
 package org.shirdrn.document.preprocessing.api;
 
-public interface Term {
-
-	int getId();
-
-	void setId(int id);
-
-	String getWord();
-
-	void setWord(String word);
+/**
+ * A term contains related information about a word.
+ * 
+ * @author yanjun
+ */
+public interface Term extends TermReadable {
 
 	String getLexicalCategory();
 
@@ -29,9 +26,5 @@ public interface Term {
 	double getTfidf();
 
 	void setTfidf(double tfidf);
-
-
-	double getMeasureValue();
-
-	void setMeasureValue(double measureValue);
+	
 }

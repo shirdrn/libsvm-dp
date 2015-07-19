@@ -21,5 +21,5 @@ public interface ConfigKeys {
 	String DOCUMENT_FILTER_KEPT_LEXICAL_CATEGORIES = "document.filter.kept.lexical.categories";
 	
 	String FEATURE_VECTOR_SELECTOR_CLASS = "feature.vector.selector.class";
-	String FEATURE_EACH_LABEL_KEPT_TERM_COUNT = "feature.each.label.kept.term.count";
+	String FEATURE_EACH_LABEL_KEPT_TERM_PERCENT = "feature.each.label.kept.term.percent";
 }

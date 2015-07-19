@@ -3,24 +3,30 @@ package org.shirdrn.document.preprocessing.component;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.shirdrn.document.preprocessing.api.Context;
 import org.shirdrn.document.preprocessing.api.Term;
+import org.shirdrn.document.preprocessing.api.TermFeatureable;
 import org.shirdrn.document.preprocessing.common.AbstractComponent;
+import org.shirdrn.document.preprocessing.common.FeaturedTerm;
 import org.shirdrn.document.preprocessing.utils.MetricUtils;
 
 public class DocumentTFIDFComputation extends AbstractComponent {
 
 	private static final Log LOG = LogFactory.getLog(DocumentTFIDFComputation.class);
+	private Set<TermFeatureable> featuredTerms;
 	
-	public DocumentTFIDFComputation(Context context) {
+	public DocumentTFIDFComputation(final Context context) {
 		super(context);
 	}
 
 	@Override
 	public void fire() {
+		featuredTerms = context.getVectorMetadata().featuredTerms();
+		
 		// for each document, compute TF, IDF, TF-IDF
 		Iterator<Entry<String, Map<String, Map<String, Term>>>> iter = context.getVectorMetadata().termTableIterator();
 		while(iter.hasNext()) {
@@ -34,17 +40,18 @@ public class DocumentTFIDFComputation extends AbstractComponent {
 				String doc = docsEntry.getKey();
 				Map<String, Term> terms = docsEntry.getValue();
 				Iterator<Entry<String, Term>> termsIter = terms.entrySet().iterator();
+				LOG.debug("label=" + label + ", doc=" + doc + ", terms=" + terms);
 				while(termsIter.hasNext()) {
 					Entry<String, Term> termEntry = termsIter.next();
 					String word = termEntry.getKey();
-					// check whether word is contained in feature vector
-					if(context.getVectorMetadata().containsFeaturedWord(word)) {
+					// check whether word is a featured word
+					if(isFeaturedWord(word)) {
 						Term term = termEntry.getValue();
 						int freq = term.getFreq();
-						int termCount = context.getVectorMetadata().getTermCount(label, doc);
+						int termCount = context.getVectorMetadata().termCount(label, doc);
 						double tf = MetricUtils.tf(freq, termCount);
-						int totalDocCount = context.getVectorMetadata().getTotalDocCount();
-						int docCountContainingTerm = context.getVectorMetadata().getDocCount(term);
+						int totalDocCount = context.getVectorMetadata().totalDocCount();
+						int docCountContainingTerm = context.getVectorMetadata().docCount(term);
 						
 						double idf = MetricUtils.idf(totalDocCount, docCountContainingTerm);
 						termEntry.getValue().setIdf(idf);
@@ -58,7 +65,12 @@ public class DocumentTFIDFComputation extends AbstractComponent {
 					}
 				}
 			}
+			LOG.info("TF-IDF computed: label=" + label);
 		}		
+	}
+	
+	private boolean isFeaturedWord(String word) {
+		return featuredTerms.contains(new FeaturedTerm(word));
 	}
 	
 }

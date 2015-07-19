@@ -3,7 +3,7 @@ package org.shirdrn.document.preprocessing.component.test;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.shirdrn.document.preprocessing.api.Context;
-import org.shirdrn.document.preprocessing.api.FeaturedTermsSelector;
+import org.shirdrn.document.preprocessing.api.FeatureTermSelector;
 import org.shirdrn.document.preprocessing.api.constants.ConfigKeys;
 import org.shirdrn.document.preprocessing.common.AbstractComponent;
 import org.shirdrn.document.preprocessing.utils.ReflectionUtils;
@@ -18,15 +18,15 @@ import org.shirdrn.document.preprocessing.utils.ReflectionUtils;
 public class LoadFeatureTermVector extends AbstractComponent {
 
 	private static final Log LOG = LogFactory.getLog(LoadFeatureTermVector.class);
-	private final FeaturedTermsSelector featuredTermsSelector;
+	private final FeatureTermSelector featuredTermsSelector;
 	
-	public LoadFeatureTermVector(Context context) {
+	public LoadFeatureTermVector(final Context context) {
 		super(context);
 		String selectorClazz = context.getConfiguration().get(
 				ConfigKeys.FEATURE_VECTOR_SELECTOR_CLASS, 
 				"org.shirdrn.document.processor.feature.ChiFeaturedTermsSelector");
 		LOG.info("Feature term vector selector: selectorClazz=" + selectorClazz);
-		featuredTermsSelector = ReflectionUtils.newInstance(selectorClazz, FeaturedTermsSelector.class);
+		featuredTermsSelector = ReflectionUtils.newInstance(selectorClazz, FeatureTermSelector.class);
 	}
 	
 	@Override

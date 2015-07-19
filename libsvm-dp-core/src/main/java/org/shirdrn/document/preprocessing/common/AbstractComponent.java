@@ -7,7 +7,7 @@ public abstract class AbstractComponent implements Component {
 	protected final Context context;
 	private Component next;
 	
-	public AbstractComponent(Context context) {
+	public AbstractComponent(final Context context) {
 		this.context = context;
 	}
 	

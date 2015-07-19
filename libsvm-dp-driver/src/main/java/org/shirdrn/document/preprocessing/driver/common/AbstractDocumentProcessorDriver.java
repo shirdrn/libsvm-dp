@@ -3,7 +3,7 @@ package org.shirdrn.document.preprocessing.driver.common;
 import org.shirdrn.document.preprocessing.api.Context;
 import org.shirdrn.document.preprocessing.api.ProcessorType;
 import org.shirdrn.document.preprocessing.common.Component;
-import org.shirdrn.document.preprocessing.common.ContextImpl;
+import org.shirdrn.document.preprocessing.utils.PreprocessingUtils;
 import org.shirdrn.document.preprocessing.utils.ReflectionUtils;
 
 public abstract class AbstractDocumentProcessorDriver {
@@ -23,7 +23,7 @@ public abstract class AbstractDocumentProcessorDriver {
 	}
 	
 	public Context newContext(ProcessorType type, String config) {
-		return new ContextImpl(type, config);
+		return PreprocessingUtils.newContext(type, config);
 	}
 	
 	public static void start(Class<? extends AbstractDocumentProcessorDriver> driverClass) {

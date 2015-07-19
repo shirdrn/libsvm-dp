@@ -13,27 +13,36 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.shirdrn.document.preprocessing.api.Context;
 import org.shirdrn.document.preprocessing.api.Term;
+import org.shirdrn.document.preprocessing.api.TermFeatureable;
 import org.shirdrn.document.preprocessing.common.AbstractComponent;
 import org.shirdrn.document.preprocessing.component.test.OutputtingQuantizedTestData;
+import org.shirdrn.document.preprocessing.utils.FileUtils;
+
+import com.google.common.collect.Maps;
 
 public abstract class AbstractOutputtingQuantizedData extends AbstractComponent {
 
-	private static final Log LOG = LogFactory.getLog(OutputtingQuantizedTestData.class);
-	protected BufferedWriter writer;
+	private static final Log LOG = LogFactory.getLog(AbstractOutputtingQuantizedData.class);
+	private BufferedWriter writer;
+	private Map<String, TermFeatureable> featuredTermsMap = Maps.newHashMap();
 	
-	public AbstractOutputtingQuantizedData(Context context) {
+	public AbstractOutputtingQuantizedData(final Context context) {
 		super(context);
 	}
 	
 	@Override
 	public void fire() {
+		for(TermFeatureable term : context.getVectorMetadata().featuredTerms()) {
+			featuredTermsMap.put(term.getWord(), term);
+		}
+		
 		// create term vectors for outputting/inputting
 		quantizeTermVectors();
+		
 		// output train/test vectors
 		try {
-			writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(new File(context.getFDMetadata().getOutputDir(), 
-							context.getFDMetadata().getOutputVectorFile())), context.getCharset()));
+			File file = new File(context.getFDMetadata().getOutputDir(), context.getFDMetadata().getOutputVectorFile());
+			writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), context.getCharset()));
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -71,19 +80,13 @@ public abstract class AbstractOutputtingQuantizedData extends AbstractComponent 
 				LOG.warn("Label ID can not be found: label=" + label + ", labelId=null");
 			}
 		}
-		if(writer != null) {
-			try {
-				writer.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
+		FileUtils.closeQuietly(writer);
 		LOG.info("Finished: outputVectorFile=" + context.getFDMetadata().getOutputVectorFile());
-			
 	}
 	
 	private Integer getWordId(String word) {
-		return context.getVectorMetadata().getFeaturedTermId(word);
+		TermFeatureable term = featuredTermsMap.get(word);
+		return term == null ? null : term.getId();
 	}
 
 	private Integer getLabelId(String label) {

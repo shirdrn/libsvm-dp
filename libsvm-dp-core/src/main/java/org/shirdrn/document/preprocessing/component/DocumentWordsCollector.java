@@ -29,7 +29,7 @@ public class DocumentWordsCollector extends AbstractComponent {
 	private ExecutorService executorService;
 	private CountDownLatch latch;
 	
-	public DocumentWordsCollector(Context context) {
+	public DocumentWordsCollector(final Context context) {
 		super(context);
 		// load term filter classes
 		String filterClassNames = context.getConfiguration().get(ConfigKeys.DOCUMENT_FILTER_CLASSES);
@@ -78,12 +78,17 @@ public class DocumentWordsCollector extends AbstractComponent {
 	}
 
 	private void stat() {
-		LOG.info("STAT: totalDocCount=" + context.getVectorMetadata().getTotalDocCount());
-		LOG.info("STAT: labelCount=" + context.getVectorMetadata().getLabelCount());
+		LOG.info("STAT: totalDocCount=" + context.getVectorMetadata().totalDocCount());
+		LOG.info("STAT: labelCount=" + context.getVectorMetadata().labelCount());
 		Iterator<Entry<String, Map<String, Map<String, Term>>>> iter = context.getVectorMetadata().termTableIterator();
 		while(iter.hasNext()) {
 			Entry<String, Map<String, Map<String, Term>>> entry = iter.next();
-			LOG.info("STAT: label=" + entry.getKey() + ", docCount=" + entry.getValue().size());
+			Iterator<Entry<String, Map<String, Term>>> docIter = entry.getValue().entrySet().iterator();
+			int termCount = 0;
+			while(docIter.hasNext()) {
+				termCount += docIter.next().getValue().size();
+			}
+			LOG.info("STAT: label=" + entry.getKey() + ", docCount=" + entry.getValue().size() + ", termCount=" + termCount);
 		}
 	}
 	

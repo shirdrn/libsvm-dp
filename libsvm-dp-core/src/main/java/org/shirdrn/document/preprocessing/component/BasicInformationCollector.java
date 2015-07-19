@@ -12,7 +12,7 @@ public class BasicInformationCollector extends AbstractComponent {
 	
 	private static final Log LOG = LogFactory.getLog(BasicInformationCollector.class);
 	
-	public BasicInformationCollector(Context context) {
+	public BasicInformationCollector(final Context context) {
 		super(context);
 	}
 

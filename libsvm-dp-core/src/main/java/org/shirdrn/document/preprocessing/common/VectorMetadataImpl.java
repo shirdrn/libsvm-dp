@@ -1,6 +1,7 @@
 package org.shirdrn.document.preprocessing.common;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.shirdrn.document.preprocessing.api.Term;
+import org.shirdrn.document.preprocessing.api.TermFeatureable;
 import org.shirdrn.document.preprocessing.api.VectorMetadata;
 
 import com.google.common.collect.Maps;
@@ -17,22 +19,19 @@ public class VectorMetadataImpl implements VectorMetadata {
 
 	private int totalDocCount;
 	private final List<String> labels = new ArrayList<String>();
-	// Map<类别, 文档数量>
+	// Map<label, docCnt>
 	private final Map<String, Integer> labelledTotalDocCountMap = Maps.newHashMap();
-	//  Map<类别, Map<文档 ,Map<词, 词信息>>>
+	//  Map<label, Map<doc ,Map<word, term>>>
 	private final Map<String, Map<String, Map<String, Term>>> termTable = Maps.newHashMap();
-	//  Map<词 ,Map<类别, Set<文档>>>
+	//  Map<word ,Map<label, Set<doc>>>
 	private final Map<String, Map<String, Set<String>>> invertedTable = Maps.newHashMap();
 	
 	// <labelId, label>
-	private final Map<Integer, String> globalIdToLabelMap = Maps.newHashMap();
+	private final Map<Integer, String> idToLabelMap = Maps.newHashMap();
 	// <label, labelId>
-	private final Map<String, Integer> globalLabelToIdMap = Maps.newHashMap();
+	private final Map<String, Integer> labelToIdMap = Maps.newHashMap();
 	
-	// Map<label, Map<word, term>>
-	private final Map<String, Map<String, Term>> labelToFeaturedTermVectorsMap = Maps.newHashMap();
-	// Map<word, term>, finally merged vector
-	private final Map<String, Term> mergedFeaturedTermVectorMap = Maps.newHashMap();
+	private Set<TermFeatureable> featuredTerms = Sets.newHashSet();
 	
 	@Override
 	public void addLabel(String label) {
@@ -42,12 +41,12 @@ public class VectorMetadataImpl implements VectorMetadata {
 	}
 	
 	@Override
-	public List<String> getLabels() {
-		return labels;
+	public List<String> labels() {
+		return Collections.unmodifiableList(labels);
 	}
 	
 	@Override
-	public int getTotalDocCount() {
+	public int totalDocCount() {
 		return totalDocCount;
 	}
 	
@@ -57,23 +56,12 @@ public class VectorMetadataImpl implements VectorMetadata {
 	}
 	
 	@Override
-	public int getLabelledTotalDocCount(String label) {
-		return labelledTotalDocCountMap.get(label);
-	}
-	
-	@Override
 	public void putLabelledTotalDocCount(String label, int labelledDocCount) {
 		labelledTotalDocCountMap.put(label, labelledDocCount);
 	}
 	
 	
 	//////// inverted table ////////
-	
-	@Override
-	public int getDocCount(Term term, String label) {
-		String word = term.getWord();
-		return invertedTable.get(word).get(label).size();
-	}
 	
 	@Override
 	public synchronized void addTermToInvertedTable(String label, String doc, Term term) {
@@ -101,7 +89,7 @@ public class VectorMetadataImpl implements VectorMetadata {
 	}
 	
 	@Override
-	public int getDocCount(Term term) {
+	public int docCount(Term term) {
 		String word = term.getWord();
 		int count = 0;
 		Map<String, Set<String>> labelledDocs = invertedTable.get(word);
@@ -117,20 +105,10 @@ public class VectorMetadataImpl implements VectorMetadata {
 		return invertedTable.entrySet().iterator();
 	}
 	
-	@Override
-	public int getDocCountInThisLabel(Term term) {
-		return invertedTable.get(term.getWord()).size();
-	}
-	
 	//////// term table ////////
 	
 	@Override
-	public int getDocCount(String label) {
-		return termTable.get(label).size();
-	}
-	
-	@Override
-	public int getTermCount(String label, String doc) {
+	public int termCount(String label, String doc) {
 		int size = 0;
 		// avoid empty file
 		if(termTable.get(label) != null && termTable.get(label).get(doc) != null) {
@@ -150,7 +128,7 @@ public class VectorMetadataImpl implements VectorMetadata {
 	}
 	
 	@Override
-	public int getLabelCount() {
+	public int labelCount() {
 		return termTable.keySet().size();
 	}
 	
@@ -164,76 +142,40 @@ public class VectorMetadataImpl implements VectorMetadata {
 	// label->id
 	@Override
 	public Iterator<Entry<String, Integer>> labelVectorMapIterator() {
-		return globalLabelToIdMap.entrySet().iterator();
+		return labelToIdMap.entrySet().iterator();
 	}
 	
 	@Override
 	public Integer getlabelId(String label) {
-		return globalLabelToIdMap.get(label);
+		return labelToIdMap.get(label);
 	}
 	
 	@Override
 	public void putLabelToIdPairs(Map<String, Integer> globalLabelToIdMap) {
-		this.globalLabelToIdMap.putAll(globalLabelToIdMap);
+		this.labelToIdMap.putAll(globalLabelToIdMap);
 	}
 	
 	// id->label
 	@Override
 	public void putIdToLabelPairs(Map<Integer, String> globalIdToLabelMap) {
-		this.globalIdToLabelMap.putAll(globalIdToLabelMap);
+		this.idToLabelMap.putAll(globalIdToLabelMap);
 	}
 	
 	@Override
-	public String getlabel(Integer labelId) {
-		return globalIdToLabelMap.get(labelId);
+	public String getLabelById(Integer labelId) {
+		return idToLabelMap.get(labelId);
 	}
 	
-	@Override
-	public Set<String> getWordSet() {
-		return invertedTable.keySet();
-	}
-	
-	//////// featured vectors ////////
+	//// featured vectors ////////
 	
 	@Override
-	public Iterator<Entry<String, Map<String, Term>>> labelToFeaturedTermVectorsIterator() {
-		return labelToFeaturedTermVectorsMap.entrySet().iterator();
-	}
-	
-	@Override
-	public Integer getFeaturedTermId(String word) {
-		Term term = mergedFeaturedTermVectorMap.get(word);
-		if(term != null) {
-			return term.getId();
-		}
-		return null;
+	public void setFeaturedTerms(Set<TermFeatureable> terms) {
+		this.featuredTerms = terms;		
 	}
 
 	@Override
-	public boolean containsFeaturedWord(String word) {
-		return mergedFeaturedTermVectorMap.containsKey(word);
+	public Set<TermFeatureable> featuredTerms() {
+		return Collections.unmodifiableSet(featuredTerms);
 	}
 
-	@Override
-	public Iterator<Entry<String, Term>> featuredTermVectorIterator() {
-		return mergedFeaturedTermVectorMap.entrySet().iterator();
-	}
-
-	@Override
-	public void collectFeaturedTerm(String label, String word, Term term) {
-		Map<String,Term> words = labelToFeaturedTermVectorsMap.get(label);
-		if(words == null) {
-			words = Maps.newHashMap();
-			labelToFeaturedTermVectorsMap.put(label, words);
-		}
-		words.put(word, term);		
-	}
-
-	@Override
-	public void addToMergeFeaturedTerm(String word, Term term) {
-		if(!mergedFeaturedTermVectorMap.containsKey(word)) {
-			mergedFeaturedTermVectorMap.put(word, term);
-		}		
-	}
-	
 }
