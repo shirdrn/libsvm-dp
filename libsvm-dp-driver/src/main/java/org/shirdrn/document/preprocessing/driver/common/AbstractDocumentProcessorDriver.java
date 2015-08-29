@@ -8,7 +8,7 @@ import org.shirdrn.document.preprocessing.utils.ReflectionUtils;
 
 public abstract class AbstractDocumentProcessorDriver {
 
-	public abstract void process();
+	public abstract void preprocess();
 	
 	protected void run(Component[] chain) {
 		for (int i = 0; i < chain.length - 1; i++) {
@@ -28,6 +28,6 @@ public abstract class AbstractDocumentProcessorDriver {
 	
 	public static void start(Class<? extends AbstractDocumentProcessorDriver> driverClass) {
 		AbstractDocumentProcessorDriver driver = ReflectionUtils.newInstance(driverClass);
-		driver.process();
+		driver.preprocess();
 	}
 }

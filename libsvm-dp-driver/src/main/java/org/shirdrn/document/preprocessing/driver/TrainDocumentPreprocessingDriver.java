@@ -28,16 +28,16 @@ import org.shirdrn.document.preprocessing.utils.PreprocessingUtils;
  * <li>a term vector file property: <code>processor.dataset.chi.term.vector.file</code></li>
  * <li>a label vector file property: <code>processor.dataset.label.vector.file</code></li>
  * </ol>
- * which are used by {@link TestDocumentProcessorDriver} to produce TEST vector data.
+ * which are used by {@link TestDocumentPreprocessingDriver} to produce TEST vector data.
  * 
  * @author Shirdrn
  */
-public class TrainDocumentProcessorDriver extends AbstractDocumentProcessorDriver {
+public class TrainDocumentPreprocessingDriver extends AbstractDocumentProcessorDriver {
 
 	private static final String CONFIG = "config-train.properties";
 	
 	@Override
-	public void process() {
+	public void preprocess() {
 		Context context = super.newContext(ProcessorType.TRAIN, CONFIG);
 		context.setVectorMetadata(PreprocessingUtils.newVectorMetadata());
 		
@@ -54,7 +54,7 @@ public class TrainDocumentProcessorDriver extends AbstractDocumentProcessorDrive
 	}
 	
 	public static void main(String[] args) {
-		AbstractDocumentProcessorDriver.start(TrainDocumentProcessorDriver.class);	
+		AbstractDocumentProcessorDriver.start(TrainDocumentPreprocessingDriver.class);	
 	}
 
 }

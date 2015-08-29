@@ -26,12 +26,12 @@ import org.shirdrn.document.preprocessing.utils.PreprocessingUtils;
  * 
  * @author Shirdrn
  */
-public class TestDocumentProcessorDriver extends AbstractDocumentProcessorDriver {
+public class TestDocumentPreprocessingDriver extends AbstractDocumentProcessorDriver {
 
 	private static final String CONFIG = "config-test.properties";
 	
 	@Override
-	public void process() {
+	public void preprocess() {
 		Context context = super.newContext(ProcessorType.TEST, CONFIG);
 		context.setVectorMetadata(PreprocessingUtils.newVectorMetadata());
 		
@@ -49,7 +49,7 @@ public class TestDocumentProcessorDriver extends AbstractDocumentProcessorDriver
 	
 	public static void main(String[] args) {
 		AbstractDocumentProcessorDriver.start(
-				TestDocumentProcessorDriver.class);		
+				TestDocumentPreprocessingDriver.class);		
 	}
 
 }

@@ -16,9 +16,6 @@ import org.shirdrn.document.preprocessing.utils.ReflectionUtils;
  * be based on any effective metric, here we use the Chi-square distance metric to
  * choose suitable terms. Certainly you can use another one to replace the
  * default one.</br>
- * If you have a huge data set which can fit in memory, the better practices
- * are plus a cache for caching computation result, because there are too many
- * identical computation logic.
  * 
  * @author Shirdrn
  */
@@ -31,7 +28,7 @@ public class FeaturedTermVectorSelector extends AbstractComponent {
 		super(context);
 		String selectorClazz = context.getConfiguration().get(
 				ConfigKeys.FEATURE_VECTOR_SELECTOR_CLASS, 
-				"org.shirdrn.document.processor.feature.ChiFeaturedTermsSelector");
+				"org.shirdrn.document.preprocessing.measure.chi.ChiFeatureTermSelector");
 		LOG.info("Feature term vector selector: selectorClazz=" + selectorClazz);
 		featuredTermsSelector = ReflectionUtils.newInstance(selectorClazz, FeatureTermSelector.class);
 	}

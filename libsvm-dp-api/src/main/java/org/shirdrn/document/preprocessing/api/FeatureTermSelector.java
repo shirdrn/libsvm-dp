@@ -3,8 +3,8 @@ package org.shirdrn.document.preprocessing.api;
 import java.util.Set;
 
 /**
- * It's used to choose term vector according to
- * a specified selection policy.
+ * It's used to choose term vector from the train data set 
+ * according to the specified selection policy.
  * 
  * @author yanjun
  */

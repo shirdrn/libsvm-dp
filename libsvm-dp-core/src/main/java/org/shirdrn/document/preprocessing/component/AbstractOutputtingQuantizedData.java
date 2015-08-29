@@ -15,7 +15,6 @@ import org.shirdrn.document.preprocessing.api.Context;
 import org.shirdrn.document.preprocessing.api.Term;
 import org.shirdrn.document.preprocessing.api.TermFeatureable;
 import org.shirdrn.document.preprocessing.common.AbstractComponent;
-import org.shirdrn.document.preprocessing.component.test.OutputtingQuantizedTestData;
 import org.shirdrn.document.preprocessing.utils.FileUtils;
 
 import com.google.common.collect.Maps;
