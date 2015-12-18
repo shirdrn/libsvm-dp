@@ -57,7 +57,7 @@ public abstract class AbstractOutputtingQuantizedData extends AbstractComponent 
 					StringBuffer line = new StringBuffer();
 					line.append(labelId).append(" ");
 					Entry<String, Map<String, Term>> docsEntry = docsIter.next();
-					Map<String, Term> terms = docsEntry.getValue();
+					Map<String, Term> terms = sortMapByKey(docsEntry.getValue());
 					for(Entry<String, Term> termEntry : terms.entrySet()) {
 						String word = termEntry.getKey();
 						Integer wordId = getWordId(word);
@@ -82,6 +82,25 @@ public abstract class AbstractOutputtingQuantizedData extends AbstractComponent 
 		FileUtils.closeQuietly(writer);
 		LOG.info("Finished: outputVectorFile=" + context.getFDMetadata().getOutputVectorFile());
 	}
+	
+	/**
+	 * sort map by key
+	 * @param oriMap original map
+	 * @return sorted map
+	 */
+	private Map<String, Term> sortMapByKey(Map<String, Term> oriMap) {
+	        if (oriMap == null || oriMap.isEmpty()) {
+	            return null;
+	        }
+	        Map<String, Term> sortedMap = new TreeMap<String, Term>(
+	                new Comparator<String>() {
+	                    public int compare(String key1, String key2) {
+	                        return getWordId(key1) - getWordId(key2);
+	                    }
+	                });
+	        sortedMap.putAll(oriMap);
+	        return sortedMap;
+	 }
 	
 	private Integer getWordId(String word) {
 		TermFeatureable term = featuredTermsMap.get(word);
