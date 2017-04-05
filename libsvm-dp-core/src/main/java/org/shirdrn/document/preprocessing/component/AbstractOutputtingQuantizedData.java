@@ -54,18 +54,28 @@ public abstract class AbstractOutputtingQuantizedData extends AbstractComponent 
 				Map<String, Map<String, Term>>  docs = labelledDocsEntry.getValue();
 				Iterator<Entry<String, Map<String, Term>>> docsIter = docs.entrySet().iterator();
 				while(docsIter.hasNext()) {
-					StringBuffer line = new StringBuffer();
-					line.append(labelId).append(" ");
 					Entry<String, Map<String, Term>> docsEntry = docsIter.next();
 					Map<String, Term> terms = docsEntry.getValue();
+					
+					// for each document, sort feature term by word ID in an ascending order
+					Map<Integer, Term> sortedTerms = Maps.newTreeMap();
 					for(Entry<String, Term> termEntry : terms.entrySet()) {
 						String word = termEntry.getKey();
 						Integer wordId = getWordId(word);
 						if(wordId != null) {
 							Term term = termEntry.getValue();
-							line.append(wordId).append(":").append(term.getTfidf()).append(" ");
+							sortedTerms.put(wordId, term);
 						}
 					}
+					
+					StringBuffer line = new StringBuffer();
+					line.append(labelId).append(" ");
+					for(Entry<Integer, Term> entry : sortedTerms.entrySet()) {
+						Integer wordId = entry.getKey();
+						Term term = entry.getValue();
+						line.append(wordId).append(":").append(term.getTfidf()).append(" ");
+					}
+					
 					try {
 						String element = line.toString().trim();
 						LOG.debug("Write line: " + element);
